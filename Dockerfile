@@ -5,7 +5,9 @@ FROM nvidia/cuda:13.1.2-devel-ubuntu24.04 AS build
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
     && apt-get install --yes --no-install-recommends \
+        ca-certificates \
         cmake \
+        git \
         libavcodec-dev \
         libavformat-dev \
         libavutil-dev \
@@ -13,13 +15,16 @@ RUN apt-get update \
         libswscale-dev \
         ninja-build \
         pkg-config \
-    && rm -rf /var/lib/apt/lists/*
+        python3-pip \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip3 install --break-system-packages --no-cache-dir "cmake>=3.30"
 
 WORKDIR /src
 COPY . .
 
 RUN cmake -S . -B /build -G Ninja \
         -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_CUDA_ARCHITECTURES=89 \
         -DNINFER_BUILD_APPS=ON \
         -DBUILD_TESTING=OFF \
         -DNINFER_BUILD_BENCHMARKS=OFF \
